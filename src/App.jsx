@@ -1,10 +1,10 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import Header from "./components/Header";
 import SelectLang from "./components/SelectLang";
 import TextArea from "./components/TextArea";
-import { fetchData } from "./components/utils/Utils";
-import { API_URL } from "./components/utils/Constants";
-import { options } from "./components/utils/Utils";
+import { fetchData, options } from "./utils";
+import { API_URL } from "./constants";
+import useDebounce from "./hooks/useDebounce";
 
 function App() {
   const [inputText, setInputText] = useState("");
@@ -13,21 +13,15 @@ function App() {
   const [outputLanguage, setOutputLanguage] = useState("ar");
   const [isLoading, setIsLoading] = useState(false);
 
-  const option = options(inputText, inputLanguage, outputLanguage);
+  const debouncedQuery = useDebounce(inputText, 500);
 
   // Translation on change
 
-  useEffect(() => {
-    const id = setTimeout(() => {
-      translateHandler();
-    }, 500);
+  const translateHandler = useCallback(async function (inputValue) {
+    if (inputValue?.length < 2) return;
 
-    return () => clearTimeout(id);
-  }, [inputText]);
-
-  const translateHandler = async function () {
-    if (inputText.length < 2) return;
     try {
+      const option = options(inputValue, inputLanguage, outputLanguage);
       setIsLoading(true);
       const result = await fetchData(API_URL, option);
       setOutputText(result.google.text);
@@ -36,7 +30,11 @@ function App() {
     } finally {
       setIsLoading(false);
     }
-  };
+  }, []);
+
+  useEffect(() => {
+    translateHandler(debouncedQuery);
+  }, [debouncedQuery, translateHandler]);
 
   return (
     <div className="container">
@@ -57,7 +55,6 @@ function App() {
         setInputText={setInputText}
         outputText={outputText}
         setOutputText={setOutputText}
-        onTranslation={translateHandler}
       />
       <button
         className="translate-btn"

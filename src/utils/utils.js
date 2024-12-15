@@ -1,4 +1,4 @@
-import { API_KEY } from "./Constants";
+import { API_KEY } from "../constants";
 
 export const options = function (inputText, inputLanguage, outputLanguage) {
   return {
