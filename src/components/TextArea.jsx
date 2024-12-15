@@ -2,6 +2,7 @@ function TextArea({ inputValue, setInputText, outputText, setOutputText }) {
   const inputHandler = function (e) {
     setInputText(e.target.value);
   };
+
   const outputHandler = function (e) {
     setOutputText(e.target.value);
   };

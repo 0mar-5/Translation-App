@@ -7,6 +7,7 @@ function SelectLang({
   setOutputLanguage,
   setInputText,
   setOutputText,
+  isLoading,
 }) {
   const languages = [
     { code: "en", name: "English" },
@@ -45,6 +46,7 @@ function SelectLang({
         id="selc-lang"
         value={inputLanguage}
         onChange={selectionHandler}
+        disabled={isLoading}
       >
         {selectLanguage}
       </select>
@@ -55,6 +57,7 @@ function SelectLang({
         name="lang-2"
         id="selc-lang2"
         value={outputLanguage}
+        disabled={isLoading}
         onChange={(e) => {
           setOutputLanguage(e.target.value);
           setInputText("");

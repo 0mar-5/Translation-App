@@ -72,3 +72,8 @@ textarea {
 .translate-btn:hover {
   background-color: #2962ff;
 }
+
+button:disabled,
+select:disabled {
+  cursor: not-allowed;
+}

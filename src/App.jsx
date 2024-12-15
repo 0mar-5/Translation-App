@@ -2,48 +2,39 @@ import { useEffect, useState } from "react";
 import Header from "./components/Header";
 import SelectLang from "./components/SelectLang";
 import TextArea from "./components/TextArea";
-import { API_KEY } from "./components/ApiKey";
+import { fetchData } from "./components/utils/Utils";
+import { API_URL } from "./components/utils/Constants";
+import { options } from "./components/utils/Utils";
+
 function App() {
   const [inputText, setInputText] = useState("");
   const [outputText, setOutputText] = useState("");
   const [inputLanguage, setInputLanguage] = useState("en");
   const [outputLanguage, setOutputLanguage] = useState("ar");
+  const [isLoading, setIsLoading] = useState(false);
 
-  const options = {
-    method: "POST",
-    headers: {
-      accept: "application/json",
-      "content-type": "application/json",
-      authorization: "Bearer " + API_KEY,
-    },
-    body: JSON.stringify({
-      fallback_providers: ["microsoft"],
-      response_as_dict: true,
-      attributes_as_list: false,
-      show_base_64: true,
-      show_original_response: false,
-      providers: ["google"],
-      text: inputText,
-      source_language: inputLanguage,
-      target_language: outputLanguage,
-    }),
-  };
-  useEffect(function () {
-    translateHandler();
-  }, []);
+  const option = options(inputText, inputLanguage, outputLanguage);
+
+  // Translation on change
+
+  useEffect(() => {
+    const id = setTimeout(() => {
+      translateHandler();
+    }, 500);
+
+    return () => clearTimeout(id);
+  }, [inputText]);
 
   const translateHandler = async function () {
-    if (!inputText) return;
+    if (inputText.length < 2) return;
     try {
-      const response = await fetch(
-        "https://api.edenai.run/v2/translation/automatic_translation",
-        options
-      );
-
-      const result = await response.json();
+      setIsLoading(true);
+      const result = await fetchData(API_URL, option);
       setOutputText(result.google.text);
     } catch (error) {
       console.error(error);
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -58,6 +49,7 @@ function App() {
         setOutputLanguage={setOutputLanguage}
         setInputText={setInputText}
         setOutputText={setOutputText}
+        isLoading={isLoading}
       />
 
       <TextArea
@@ -65,8 +57,13 @@ function App() {
         setInputText={setInputText}
         outputText={outputText}
         setOutputText={setOutputText}
+        onTranslation={translateHandler}
       />
-      <button className="translate-btn" onClick={translateHandler}>
+      <button
+        className="translate-btn"
+        onClick={translateHandler}
+        disabled={isLoading}
+      >
         Translate
       </button>
     </div>
